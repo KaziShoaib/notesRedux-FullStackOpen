@@ -1,56 +1,50 @@
+import noteService from '../services/notes';
 
-const initialState = [
-  {
-    content: 'reducer defines how redux store works',
-    important: true,
-    id: 1,
-  },
-  {
-    content: 'state of store can contain any data',
-    important: false,
-    id: 2,
-  },
-];
-
-
-const noteReducer = ( state = initialState, action ) => {
+const noteReducer = ( state = [], action ) => {
   switch(action.type){
     case 'NEW_NOTE':
       return [...state, action.data];
-    case 'TOGGLE_IMPORTANCE':{
-      //this case is wrapped in {} because we declared constants here
-      //if the {} is not given eslint will give errors
-      const id = action.data.id;
-      const noteToChange = state.find(n => n.id === id);
-      const changedNote = {
-        ...noteToChange,
-        important: !noteToChange.important
-      };
-      return state.map(n => n.id !== id ? n : changedNote);
+    case 'UPDATE_NOTE':{
+      const updatedNote = action.data;
+      return state.map(n => n.id !== updatedNote.id ? n : updatedNote);
     }
+    case 'INIT_NOTES':
+      return action.data;
     default:
       return state;
   }
 };
 
-const generateId = () => Number((Math.random() * 1000000).toFixed(0));
-
 export const createNote = (content) => {
-  return {
-    type : 'NEW_NOTE',
-    data : {
-      content: content,
-      important: false,
-      id: generateId()
-    }
+  return async (dispatch) => {
+    const newNote = await noteService.createNewNote(content);
+    dispatch({
+      type: 'NEW_NOTE',
+      data: newNote
+    });
   };
 };
 
 
-export const toggleImportanceOf = (id) => {
-  return {
-    type: 'TOGGLE_IMPORTANCE',
-    data: { id }
+export const toggleImportanceOf = (note) => {
+  return async (dispatch) => {
+    const newNote = { ...note, important: !note.important };
+    const updatedNote = await noteService.updateNote(note.id, newNote);
+    dispatch({
+      type: 'UPDATE_NOTE',
+      data: updatedNote
+    });
+  };
+};
+
+
+export const initializeNotes = () => {
+  return async (dispatch) => {
+    const notes = await noteService.getAll();
+    dispatch({
+      type: 'INIT_NOTES',
+      data: notes
+    });
   };
 };
 
