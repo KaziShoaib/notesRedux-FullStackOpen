@@ -10,6 +10,7 @@ const reducer = combineReducers({
   filter: filterReducer
 });
 
+//composeWithDevTools helps the redux extension installed in chrome
 const store = createStore(
   reducer,
   composeWithDevTools(
