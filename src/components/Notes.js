@@ -1,6 +1,6 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { toggleImportanceOf } from '../reducers/noteReducer';
+import { connect } from 'react-redux';
 
 
 const Note = ({ note, handleClick }) => {
@@ -12,29 +12,17 @@ const Note = ({ note, handleClick }) => {
 };
 
 
-const Notes = () => {
-
-  const notes = useSelector(state => {
-    if(state.filter === 'ALL')
-      return state.notes;
-    else if(state.filter === 'IMPORTANT')
-      return state.notes.filter(note => note.important);
-    else
-      return state.notes.filter(note => !note.important);
-  });
-
-
-  const dispatch = useDispatch();
+const Notes = (props) => {
 
 
   const toggleImportance = async (note) => {
-    dispatch(toggleImportanceOf(note));
+    props.toggleImportanceOf(note);
   };
 
 
   return(
     <ul>
-      {notes.map(note =>
+      {props.notes.map(note =>
         <Note
           key={note.id}
           note={note}
@@ -45,4 +33,27 @@ const Notes = () => {
   );
 };
 
-export default Notes;
+
+const mapStateToProps = (state) => {
+  if(state.filter === 'ALL')
+    return {
+      notes : state.notes
+    };
+  else if (state.filter === 'IMPORTANT')
+    return {
+      notes : state.notes.filter(note => note.important)
+    };
+  else
+    return {
+      notes : state.notes.filter(note => !note.important)
+    };
+};
+
+
+const mapDispatchToProps = { toggleImportanceOf };
+
+const connectedNotes = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Notes);
+export default connectedNotes;
